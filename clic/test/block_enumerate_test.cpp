@@ -37,9 +37,12 @@ int main(int argc, char **argv)
     cle::Buffer gpuFlagIndices = cle.Push<float>(input_img);
     cle::Buffer gpuNewIndices = cle.Create<float>(gpuFlagIndices, "float");
 
-    unsigned int block_value = int((int(width) + 1) / blocksize) + 1;
-    unsigned int block_dim[3] = {block_value, 1, 1};
+    unsigned int num_blocks = int((int(width) + 1) / blocksize) + 1;
+    unsigned int block_dim[3] = {num_blocks, 1, 1};
     cle::Buffer gpuBlockSums = cle.Create<float>(block_dim, "float");
+
+    // sum the image block-wise
+    cle.SumReduction(gpuFlagIndices, gpuBlockSums, blocksize);
 
     // Call kernel
     cle.BlockEnumerate(gpuFlagIndices, gpuBlockSums, gpuNewIndices, blocksize);
